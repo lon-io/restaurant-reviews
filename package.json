@@ -1,0 +1,50 @@
+{
+  "name": "mws-restaurant-stage-1",
+  "version": "1.0.0",
+  "description": "--- #### _Three Stage Course Material Project - Restaurant Reviews_",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "webpack-dev-server --hot --inline",
+    "build": "rimraf ./dist && grunt && NODE_ENV=production webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lon-io/mws-restaurant-stage-1.git"
+  },
+  "author": "Lon Ilesanmi <lonilesanmi@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lon-io/mws-restaurant-stage-1/issues"
+  },
+  "homepage": "https://github.com/lon-io/mws-restaurant-stage-1#readme",
+  "devDependencies": {
+    "babel-core": "6.26.3",
+    "babel-loader": "7.1.4",
+    "babel-polyfill": "6.26.0",
+    "babel-preset-es2015": "6.24.1",
+    "babel-preset-stage-0": "6.24.1",
+    "copy-webpack-plugin": "4.5.1",
+    "css-loader": "0.28.11",
+    "eslint": "3.9.1",
+    "extract-text-webpack-plugin": "3.0.2",
+    "file-loader": "^1.1.11",
+    "grunt": "^1.0.3",
+    "grunt-responsive-images": "^1.10.1",
+    "html-webpack-plugin": "3.2.0",
+    "imagemin-webpack-plugin": "^2.2.0",
+    "leaflet": "^1.3.3",
+    "mini-css-extract-plugin": "0.4.0",
+    "node-sass": "4.9.0",
+    "rimraf": "2.6.2",
+    "sass-loader": "7.0.3",
+    "style-loader": "0.21.0",
+    "text-loader": "0.0.1",
+    "url-loader": "1.0.1",
+    "webpack": "4.12.1",
+    "webpack-cli": "3.0.8",
+    "webpack-dev-middleware": "3.1.3",
+    "webpack-dev-server": "3.1.4",
+    "webpack-visualizer-plugin": "0.1.11"
+  }
+}
