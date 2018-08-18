@@ -1,4 +1,4 @@
-const swFingerPrint = 1;
+const swFingerPrint = Date.now();
 const APP_CACHE_NAME = `restaurant-reviews-${swFingerPrint}`;
 
 // Gh-Pages parameters
