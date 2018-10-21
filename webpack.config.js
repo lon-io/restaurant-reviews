@@ -1,21 +1,38 @@
 const path = require('path');
 const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const Visualizer = require('webpack-visualizer-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default
+const CriticalPlugin = require('html-webpack-critical-plugin');
 
 const devMode = process.env.NODE_ENV !== 'production';
 const viewsDir = 'src/views';
 
-const viewPlugins = fs.readdirSync(viewsDir).map(file => {
-    const fileName = file.split('.')[0];
-    return new HtmlWebpackPlugin({
-        template: path.resolve(__dirname, `${viewsDir}/${file}`),
-        chunks: [`js/${fileName}`],
-        filename: file,
-    })
-});
+const viewPlugins = fs.readdirSync(viewsDir).map(filePath => {
+    const fileName = filePath.split('.')[0];
+    return [
+        new HtmlWebpackPlugin({
+            template: path.resolve(__dirname, `${viewsDir}/${filePath}`),
+            chunks: [`js/${fileName}`],
+            filename: filePath,
+        }),
+        new CriticalPlugin({
+            base: path.resolve(__dirname, 'dist/'),
+            src: filePath,
+            dest: filePath,
+            inline: true,
+            minify: true,
+            extract: true,
+            width: 375,
+            height: 565,
+            penthouse: {
+                blockJSRequests: false,
+            }
+        }),
+    ]
+}).reduce((acc, plugins) => ([...acc, ...plugins]), []);
 
 module.exports = {
     // Include source maps in development files
@@ -25,19 +42,26 @@ module.exports = {
 
     plugins: [
         new CopyWebpackPlugin([{
-            from: '../temp/img',
+            from: '../temp/webp',
             to: 'img',
+        }, ]),
+        new CopyWebpackPlugin([{
+            from: './assets/icons',
+            to: 'icons',
+        }, ]),
+        new CopyWebpackPlugin([{
+            from: './manifest.json',
+            to: 'manifest.json',
         }, ]),
         new ImageminPlugin({ test: /\.(jpe?g|png|gif|svg)$/i }),
         new CopyWebpackPlugin([{
             from: './assets/css/styles.css',
             to: 'css/styles.css',
         }, ]),
-        new CopyWebpackPlugin([{
-            from: './data',
-            to: './data',
-        }, ]),
         ...viewPlugins,
+        new ScriptExtHtmlWebpackPlugin({
+            defaultAttribute: 'defer'
+          }),
         new Visualizer(),
     ],
 
