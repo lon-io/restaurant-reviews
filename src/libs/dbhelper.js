@@ -1,5 +1,14 @@
 import config from '../config';
 import { getBaseUrl, } from './utils';
+import IDBHelper from './idb-helper';
+
+const {
+    db: {
+        stores,
+        keys,
+    },
+} = config;
+const idbHelper = new IDBHelper();
 
 /**
  * Common database helper functions.
@@ -11,26 +20,32 @@ export default class DBHelper {
      * Change this to restaurants.json file location on your server.
      */
     static get DATABASE_URL() {
-        return `${getBaseUrl()}/data/restaurants.json`;
+        return `http://localhost:1337/restaurants`;
     }
 
     /**
      * Fetch all restaurants.
      */
-    static fetchRestaurants(callback) {
-        let xhr = new XMLHttpRequest();
-        xhr.open('GET', DBHelper.DATABASE_URL);
-        xhr.onload = () => {
-            if (xhr.status === 200) { // Got a success response from server!
-                const json = JSON.parse(xhr.responseText);
-                const restaurants = json.restaurants;
-                callback(null, restaurants);
-            } else { // Oops!. Got an error from server.
-                const error = (`Request failed. Returned status of ${xhr.status}`);
-                callback(error, null);
+    static async fetchRestaurants(callback) {
+        console.log('here');
+        try {
+            let restaurants = await idbHelper.get(keys.RESTAURANTS);
+
+            // Cache miss - make request;
+            if (!restaurants) {
+                console.log('here too');
+                restaurants = await fetch(DBHelper.DATABASE_URL)
+                .then(res => res.json())
+
+                // Cache the response
+                idbHelper.set(keys.RESTAURANTS, restaurants);
             }
-        };
-        xhr.send();
+
+            callback(null, restaurants);
+        } catch(error) {
+            // Oops!. Got an error from server.
+            callback(error, null);
+        }
     }
 
     /**
@@ -152,7 +167,7 @@ export default class DBHelper {
      * Restaurant image URL.
      */
     static imageUrlForRestaurant(restaurant) {
-        return (`${getBaseUrl()}/img/${restaurant.photograph}`);
+        return (`${getBaseUrl()}/img/${restaurant.photograph}.webp`);
     }
 
     /**

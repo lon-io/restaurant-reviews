@@ -7,7 +7,7 @@ import config from '../config';
  * @param {*} suffix
  */
 export const getResponsiveImageUrl = (url, suffix) => {
-    return url.replace('.jpg', `-${suffix}.jpg`);
+    return url.replace('.webp', `-${suffix}.webp`);
 }
 
 /**
