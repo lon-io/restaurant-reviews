@@ -1,6 +1,7 @@
 import config from './config';
 import DBHelper from './libs/dbhelper';
 import {
+    formatDate,
     getResponsiveImageUrl,
 } from './libs/utils';
 import {
@@ -70,6 +71,22 @@ const fetchRestaurantFromURL = (callback) => {
     }
 }
 
+const fetchReviewsFromURL = () => {
+    const id = getParameterByName('id');
+    if (!id) { // no id found in URL
+        error = 'No restaurant id in URL'
+    } else {
+        DBHelper.fetchRestaurantReviewsById(id, (error, reviews) => {
+            self.reviews = reviews;
+            if (!reviews) {
+                console.error(error);
+                return;
+            }
+            fillReviewsHTML();
+        });
+    }
+}
+
 /**
  * Create restaurant HTML and add it to the webpage
  */
@@ -108,7 +125,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
         fillRestaurantHoursHTML();
     }
     // fill reviews
-    fillReviewsHTML();
+    fetchReviewsFromURL();
 }
 
 /**
@@ -134,7 +151,7 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (reviews = self.reviews) => {
     const container = document.getElementById('reviews-container');
     const title = document.createElement('h2');
     title.innerHTML = 'Reviews';
@@ -163,7 +180,7 @@ const createReviewHTML = (review) => {
     li.appendChild(name);
 
     const date = document.createElement('p');
-    date.innerHTML = review.date;
+    date.innerHTML = formatDate(new Date(review.updatedAt))
     li.appendChild(date);
 
     const rating = document.createElement('p');
@@ -174,7 +191,51 @@ const createReviewHTML = (review) => {
     comments.innerHTML = review.comments;
     li.appendChild(comments);
 
+    createReviewFormRatingBar();
     return li;
+}
+
+const createReviewFormRatingBar = () => {
+    const ratingSVGFactory = (rating) => `
+        <svg height="25" width="23" class="star rating" data-rating="${rating}">
+            <polygon points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78" style="fill-rule:nonzero;"/>
+        </svg>
+    `;
+
+    const reviewRatingWrapper = document.getElementById('review-stars')
+    const stars = new Array(5).fill('').map((_, i) => ratingSVGFactory(i + 1));
+    reviewRatingWrapper.innerHTML = stars.join('\n');
+
+    addRatingBarClickHandler();
+    addFormSubmissionHandler();
+}
+
+const addRatingBarClickHandler = () => {
+    window.addEventListener('click', (event) => {
+        const target = event.target;
+        const star = target.closest('.star.rating');
+
+        if (star) {
+            const parent = star.parentNode;
+            parent.dataset.stars = star.dataset.rating;
+            document.getElementById('ratingBar').value=star.dataset.rating;
+        }
+    });
+}
+
+const addFormSubmissionHandler = () => {
+    window.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const target = event.target;
+        const form = target.closest('#review-form');
+
+        if (form) {
+            const formData = new FormData(form);
+            window.fd = formData;
+            // const values = formData.getAll();
+            // console.log(values);
+        }
+    });
 }
 
 /**

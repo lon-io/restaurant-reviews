@@ -55,6 +55,20 @@
             <section id="reviews-container" class="reviews-container">
                 <ul id="reviews-list"></ul>
             </section>
+            <section class="reviews-form-container" id="reviews-form-container">
+                <form id="review-form">
+                    <label for="name">Name</label>
+                    <input id="name" name="name" required/>
+
+                    <label for="ratingBar">Rating</label>
+                    <input id="ratingBar" name="rating" required type="hidden" />
+                    <div id="review-stars" class="stars"></div>
+
+                    <label for="review">Review</label>
+                    <textarea id="review" name="review" required></textarea>
+                    <button>Submit</button>
+                </formid>
+            </section>
         </div>
         <!-- End reviews -->
     </main>

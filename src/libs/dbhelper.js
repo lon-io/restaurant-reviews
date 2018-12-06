@@ -20,21 +20,19 @@ export default class DBHelper {
      * Change this to restaurants.json file location on your server.
      */
     static get DATABASE_URL() {
-        return `http://localhost:1337/restaurants`;
+        return `http://localhost:1337`;
     }
 
     /**
      * Fetch all restaurants.
      */
     static async fetchRestaurants(callback) {
-        console.log('here');
         try {
             let restaurants = await idbHelper.get(keys.RESTAURANTS);
 
             // Cache miss - make request;
             if (!restaurants) {
-                console.log('here too');
-                restaurants = await fetch(DBHelper.DATABASE_URL)
+                restaurants = await fetch(`${DBHelper.DATABASE_URL}/restaurants`)
                 .then(res => res.json())
 
                 // Cache the response
@@ -65,6 +63,30 @@ export default class DBHelper {
                 }
             }
         });
+    }
+
+    /**
+     * Fetch a restaurant by its ID.
+     */
+    static async fetchRestaurantReviewsById(id, callback) {
+        try {
+            let reviews = await idbHelper.get(`${keys.RESTAURANTS_REVIEWS}_${id}`);
+
+            // Cache miss - make request;
+            if (!reviews) {
+                console.log('here too');
+                reviews = await fetch(`${DBHelper.DATABASE_URL}/reviews?restaurant_id=${id}`)
+                .then(res => res.json())
+
+                // Cache the response
+                idbHelper.set(keys.RESTAURANTS_REVIEWS, reviews);
+            }
+
+            callback(null, reviews);
+        } catch(error) {
+            // Oops!. Got an error from server.
+            callback(error, null);
+        }
     }
 
     /**

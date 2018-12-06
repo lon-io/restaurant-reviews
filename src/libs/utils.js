@@ -19,3 +19,10 @@ export const getBaseUrl = () => {
 
     return baseUrl;
 }
+
+export const formatDate = (dateObject) => {
+    if (!(dateObject instanceof Date)) return "";
+    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+    return dateObject.toLocaleDateString("en-US", options);
+}
