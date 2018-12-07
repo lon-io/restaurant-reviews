@@ -9,6 +9,10 @@ export default {
                 key: 'restaurant-reviews-store',
                 indices: {},
             },
+            STAGED_REVIEWS: {
+                key: 'restaurant-staged-reviews-store',
+                indices: {},
+            },
             // CONVERSION_FACTORS: {
             //     key: 'currency-converter-factors-store',
             //     indices: {

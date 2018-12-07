@@ -3,6 +3,7 @@ import DBHelper from './libs/dbhelper';
 import {
     formatDate,
     getResponsiveImageUrl,
+    scrollToElement,
 } from './libs/utils';
 import {
     registerServiceWorker,
@@ -164,10 +165,17 @@ const fillReviewsHTML = (reviews = self.reviews) => {
         return;
     }
     const ul = document.getElementById('reviews-list');
+
+    // Clear reviews
+    ul.innerHTML = '';
     reviews.forEach(review => {
         ul.appendChild(createReviewHTML(review));
     });
     container.appendChild(ul);
+
+    // Review logic
+    createReviewFormRatingBar();
+    addFormSubmissionHandler();
 }
 
 /**
@@ -191,7 +199,6 @@ const createReviewHTML = (review) => {
     comments.innerHTML = review.comments;
     li.appendChild(comments);
 
-    createReviewFormRatingBar();
     return li;
 }
 
@@ -207,7 +214,6 @@ const createReviewFormRatingBar = () => {
     reviewRatingWrapper.innerHTML = stars.join('\n');
 
     addRatingBarClickHandler();
-    addFormSubmissionHandler();
 }
 
 const addRatingBarClickHandler = () => {
@@ -227,13 +233,34 @@ const addFormSubmissionHandler = () => {
     window.addEventListener('submit', (event) => {
         event.preventDefault();
         const target = event.target;
-        const form = target.closest('#review-form');
 
-        if (form) {
+        if (target.matches("#review-form")) {
+            const form = target;
             const formData = new FormData(form);
-            window.fd = formData;
-            // const values = formData.getAll();
-            // console.log(values);
+
+            const id = getParameterByName('id');
+            const name = formData.get('name');
+            const rating = formData.get('rating');
+            const comments = formData.get('review');
+
+            const postData = {
+                restaurant_id: id,
+                name,
+                rating,
+                comments,
+            };
+            console.log(postData);
+            DBHelper.submitReview(postData).then((success) => {
+                if (success) {
+                    fillReviewsHTML();
+                    scrollToElement(document.getElementById('reviews-container'));
+                }
+                else {
+                    console.log('Submission Failed');
+
+                    // Todo: store in IDB for retry
+                }
+            });
         }
     });
 }

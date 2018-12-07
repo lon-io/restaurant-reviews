@@ -26,3 +26,17 @@ export const formatDate = (dateObject) => {
 
     return dateObject.toLocaleDateString("en-US", options);
 }
+
+/**
+ * Smooth scroll to an element
+ * @param {*} selector [The element's selector. E.g. '#id', '.class']
+ * @returns {undefined}
+ */
+export const scrollToElement = (element) => {
+    if (element && element.offsetTop) {
+        window.scroll({
+            top: element.offsetTop,
+            behavior: 'smooth',
+        });
+    }
+};
