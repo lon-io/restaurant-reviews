@@ -295,7 +295,7 @@ const addFormSubmissionHandler = () => {
 const listenForNetworkChanges = () => {
     window.addEventListener('online', () => {
         // Todo: sync staged reviews
-        // DBHelper.syncStagedReviews();
+        DBHelper.syncStagedReviews();
     });
 
     // window.addEventListener('offline', () => {

@@ -105,7 +105,7 @@ export default class DBHelper {
         }
     }
 
-    static async submitReview(review) {
+    static async submitReview(review, skipCache) {
         try {
             await fetch(`${DBHelper.DATABASE_URL}/reviews`, {
                 method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -121,18 +121,41 @@ export default class DBHelper {
             })
         } catch(error) {
             console.log('Failed to submit review:', JSON.stringify(review), error.message);
-            const cacheKey = `${keys.STAGED_REVIEWS}_${review.restaurant_id}`;
 
-            review.createdAt = Date.now();
-            review.updatedAt = Date.now();
+            if (!skipCache) {
+                const cacheKey = `${keys.STAGED_REVIEWS}_${review.restaurant_id}`;
 
-            // Stage the Review
-            return idbHelper.get(cacheKey, stores.STAGED_REVIEWS).then((stagedReviews) => {
-                stagedReviews = [ ...(Array.isArray(stagedReviews) ? stagedReviews : []), review, ];
+                review.createdAt = Date.now();
+                review.updatedAt = Date.now();
 
-                idbHelper.set(`${keys.STAGED_REVIEWS}_${review.restaurant_id}`, stagedReviews, stores.STAGED_REVIEWS);
-            })
+                // Stage the Review
+                return idbHelper.get(cacheKey, stores.STAGED_REVIEWS).then((stagedReviews) => {
+                    stagedReviews = [ ...(Array.isArray(stagedReviews) ? stagedReviews : []), review, ];
+
+                    idbHelper.set(`${keys.STAGED_REVIEWS}_${review.restaurant_id}`, stagedReviews, stores.STAGED_REVIEWS);
+                })
+            }
         }
+    }
+
+    static syncStagedReviews() {
+        // Get all keys
+        idbHelper.keys(stores.STAGED_REVIEWS).then(keys => {
+            if (Array.isArray(keys) && keys.length > 0) {
+                keys.forEach(key => {
+                    // Get reviews for each key
+                    idbHelper.get(key, stores.STAGED_REVIEWS).then(reviews => {
+                        // Sync each review
+                        return Array.isArray(reviews) && reviews.length > 0
+                            ? Promise.all(reviews.filter(r => !!r).map(review => this.submitReview(review)))
+                            : Promise.resolve(false);
+                    }).then(done => {
+                        // Clear the key when sync is done
+                        if (done) idbHelper.delete(key, stores.STAGED_REVIEWS);
+                    });
+                })
+            }
+        })
     }
 
     /**
