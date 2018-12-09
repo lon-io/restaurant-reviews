@@ -58,6 +58,10 @@ module.exports = {
             from: './assets/css/styles.css',
             to: 'css/styles.css',
         }, ]),
+        new CopyWebpackPlugin([{
+            from: './assets/css/vendor.min.css',
+            to: 'css/vendor.min.css',
+        }, ]),
         ...viewPlugins,
         new ScriptExtHtmlWebpackPlugin({
             defaultAttribute: 'defer'
@@ -110,4 +114,14 @@ module.exports = {
             },
         },],
     },
+
+    devServer: {
+        staticOptions: {
+            // // https://webpack.js.org/configuration/dev-server/#devserver-staticoptions
+            setHeaders: function (res, path, stat) {
+                console.log('I was called!!! too!!')
+                res.set('Cache-Control', 'max-age=31536000')
+            }
+        }
+    }
 };
