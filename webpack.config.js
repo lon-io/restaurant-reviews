@@ -18,19 +18,19 @@ const viewPlugins = fs.readdirSync(viewsDir).map(filePath => {
             chunks: [`js/${fileName}`],
             filename: filePath,
         }),
-        new CriticalPlugin({
-            base: path.resolve(__dirname, 'dist/'),
-            src: filePath,
-            dest: filePath,
-            inline: true,
-            minify: true,
-            extract: true,
-            width: 375,
-            height: 565,
-            penthouse: {
-                blockJSRequests: false,
-            }
-        }),
+        // new CriticalPlugin({
+        //     base: path.resolve(__dirname, 'dist/'),
+        //     src: filePath,
+        //     dest: filePath,
+        //     inline: true,
+        //     minify: true,
+        //     extract: true,
+        //     width: 375,
+        //     height: 565,
+        //     penthouse: {
+        //         blockJSRequests: false,
+        //     }
+        // }),
     ]
 }).reduce((acc, plugins) => ([...acc, ...plugins]), []);
 

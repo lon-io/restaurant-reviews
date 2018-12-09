@@ -4,7 +4,8 @@
     "description": "--- #### _Three Stage Course Material Project - Restaurant Reviews_",
     "main": "src/index.js",
     "scripts": {
-        "start": "webpack-dev-server --hot --inline --compress",
+        "start": "npm run images && webpack-dev-server --inline --compress",
+        "dev": "webpack-dev-server --hot --inline --compress",
         "build": "rimraf ./dist && npm run images && NODE_ENV=production webpack",
         "images": "grunt && grunt webp",
         "test": "echo \"Error: no test specified\" && exit 1",
