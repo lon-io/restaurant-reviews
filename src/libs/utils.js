@@ -40,3 +40,16 @@ export const scrollToElementBottom = (element) => {
         });
     }
 };
+
+/**
+ * Sets the visibility of a DOM element
+ * @param {*} selector [The selector to match the element]
+ * @param {*} hide [Whether to hide the element]
+ */
+export const setElementVisibility = (selector, hide) => {
+    const offlineLabel = document.querySelector(selector);
+
+    if (offlineLabel) {
+        offlineLabel.classList.toggle('hide', Boolean(hide));
+    }
+}

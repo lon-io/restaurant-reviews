@@ -4,7 +4,12 @@ import {
     formatDate,
     getResponsiveImageUrl,
     scrollToElementBottom,
+    setElementVisibility,
 } from './libs/utils';
+import {
+    ratingSVGFactory,
+    loadingSVGFactory,
+} from './libs/icons';
 import {
     registerServiceWorker,
 } from './libs/swhelper';
@@ -130,9 +135,15 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     // fill reviews
     fillReviewsHeaderHTML();
     fetchReviewsFromURL();
-    createReviewFormRatingBar();
+    fillReviewFormLoader();
+    fillReviewFormRatingBar();
     addFormSubmissionHandler();
     listenForNetworkChanges();
+}
+
+const fillReviewFormLoader = () => {
+    const reviewLoaderWrapper = document.getElementById('review-loader-container');
+    reviewLoaderWrapper.innerHTML = loadingSVGFactory();
 }
 
 /**
@@ -203,8 +214,18 @@ const createReviewHTML = (review) => {
     date.innerHTML = formatDate(new Date(review.updatedAt))
     li.appendChild(date);
 
-    const rating = document.createElement('p');
-    rating.innerHTML = `Rating: ${review.rating}`;
+    const rating = document.createElement('div');
+    const ratingBar = document.createElement('div');
+    const ratingSpan = document.createElement('span');
+    const stars = new Array(5).fill('').map((_, i) => ratingSVGFactory(i + 1));
+
+    ratingBar.classList.add('review-rating-bar');
+    ratingBar.classList.add('stars');
+    ratingBar.dataset.stars = review.rating;
+
+    ratingSpan.innerHTML = 'Rating: ';
+    ratingBar.innerHTML = stars.join('\n');
+    rating.appendChild(ratingBar);
     li.appendChild(rating);
 
     const comments = document.createElement('p');
@@ -233,13 +254,7 @@ const clearReviewForm = () => {
     }
 }
 
-const createReviewFormRatingBar = () => {
-    const ratingSVGFactory = (rating) => `
-        <svg height="25" width="23" class="star rating" data-rating="${rating}">
-            <polygon points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78" style="fill-rule:nonzero;"/>
-        </svg>
-    `;
-
+const fillReviewFormRatingBar = () => {
     const reviewRatingWrapper = document.getElementById('review-stars');
     reviewRatingWrapper.innerHTML = '';
 
@@ -282,10 +297,12 @@ const addFormSubmissionHandler = () => {
                 rating,
                 comments,
             };
-            console.log(postData);
+
+            setElementVisibility('#review-loader-container', false);
             DBHelper.submitReview(postData).then(() => {
                 fetchReviewsFromURL();
                 scrollToElementBottom(document.getElementById('reviews-container'));
+                setElementVisibility('#review-loader-container', true);
                 clearReviewForm();
             });
         }
@@ -294,13 +311,13 @@ const addFormSubmissionHandler = () => {
 
 const listenForNetworkChanges = () => {
     window.addEventListener('online', () => {
-        // Todo: sync staged reviews
         DBHelper.syncStagedReviews();
+        setElementVisibility('#offline-warning', true);
     });
 
-    // window.addEventListener('offline', () => {
-    //     this.showFlashMessage('Meh! You\'ve gone offline!');
-    // });
+    window.addEventListener('offline', () => {
+        setElementVisibility('#offline-warning', false);
+    });
 }
 
 /**

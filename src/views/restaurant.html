@@ -36,6 +36,7 @@
 
     <!-- Beginning main -->
     <main id="maincontent">
+        <div id="offline-warning" class="hide">You're currently offline...</div>
         <!-- Beginning map -->
         <section id="map-container" class="map-container">
             <div id="map"></div>
@@ -56,6 +57,7 @@
                 <ul id="reviews-list"></ul>
             </section>
             <section class="reviews-form-container" id="reviews-form-container">
+                <h2>Write a Review</h2>
                 <form id="review-form">
                     <label for="name">Name</label>
                     <input id="name" name="name" required/>
@@ -66,6 +68,7 @@
 
                     <label for="review">Review</label>
                     <textarea id="review" name="review" required></textarea>
+                    <div id="review-loader-container hide"></div>
                     <button>Submit</button>
                 </formid>
             </section>

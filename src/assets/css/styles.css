@@ -505,3 +505,33 @@ nav h1 a {
 .card-container {
     padding: 2px 16px;
 }
+
+#review-loader-container {
+    text-align: center;
+}
+
+#review-loader-container svg {
+    height: 50px;
+    width: 50px;
+}
+
+#review-loader-container svg path {
+    fill: #252831;
+}
+
+.review-rating-bar {
+    display: inline-block;
+}
+
+#offline-warning {
+    background-color: yellow;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9;
+}
+
+.hide {
+    display: none;
+}

@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     initMap(); // added
     fetchNeighborhoods();
     fetchCuisines();
+    listenForNetworkChanges();
 });
 
 /**
@@ -220,4 +221,14 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
         self.markers.push(marker);
     });
 
+}
+
+const listenForNetworkChanges = () => {
+    window.addEventListener('online', () => {
+        setElementVisibility('#offline-warning', true);
+    });
+
+    window.addEventListener('offline', () => {
+        setElementVisibility('#offline-warning', false);
+    });
 }
