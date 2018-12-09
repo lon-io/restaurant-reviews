@@ -84,8 +84,6 @@ const fetchReviewsFromURL = () => {
                 return;
             }
 
-            // Reviews logic
-            fillReviewsHeaderHTML();
             fillReviewsContentHTML();
         });
     }
@@ -130,6 +128,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     }
 
     // fill reviews
+    fillReviewsHeaderHTML();
     fetchReviewsFromURL();
     createReviewFormRatingBar();
     addFormSubmissionHandler();
@@ -184,6 +183,7 @@ const fillReviewsContentHTML = () => {
 
     // Clear reviews
     ul.innerHTML = '';
+    console.log('3', reviews);
     reviews.forEach(review => {
         ul.appendChild(createReviewHTML(review));
     });
@@ -263,7 +263,7 @@ const addFormSubmissionHandler = () => {
             };
             console.log(postData);
             DBHelper.submitReview(postData).then(() => {
-                fillReviewsContentHTML()
+                fetchReviewsFromURL()
                 scrollToElement(document.getElementById('reviews-container'));
             });
         }

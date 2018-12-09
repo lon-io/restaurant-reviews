@@ -70,23 +70,68 @@ export default class DBHelper {
      */
     static async fetchRestaurantReviewsById(id, callback) {
         const cacheKey = `${keys.RESTAURANTS_REVIEWS}_${id}`;
+        const stagedCacheKey = `${keys.STAGED_REVIEWS}_${id}`;
         try {
             let reviews = await idbHelper.get(cacheKey);
+            let stagedReviews = [];
 
-            // Cache miss - make request;
-            if (!reviews) {
-                console.log('here too');
-                reviews = await fetch(`${DBHelper.DATABASE_URL}/reviews?restaurant_id=${id}`)
-                .then(res => res.json())
+            // Present cached content
+            if (reviews) {
+                // If we're offline, Get staged reviews
+                if (!navigator.onLine) {
+                    stagedReviews = await idbHelper.get(stagedCacheKey, stores.STAGED_REVIEWS);
+                    console.log('1', stagedReviews);
+                }
 
-                // Cache the response
-                idbHelper.set(cacheKey, reviews);
+                if (Array.isArray(stagedReviews) && stagedReviews.length > 0) {
+                    reviews = reviews.concat(stagedReviews);
+                }
+
+                console.log('2', stagedReviews);
+                callback(null, reviews);
             }
+
+            // Fetch (potentially) updated content;
+            reviews = await fetch(`${DBHelper.DATABASE_URL}/reviews?restaurant_id=${id}`)
+            .then(res => res.json())
+
+            // Update the cache
+            idbHelper.set(cacheKey, reviews);
 
             callback(null, reviews);
         } catch(error) {
             // Oops!. Got an error from server.
             callback(error, null);
+        }
+    }
+
+    static async submitReview(review) {
+        try {
+            await fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+                method: "POST", // *GET, POST, PUT, DELETE, etc.
+                mode: "cors", // no-cors, cors, *same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: "same-origin", // include, *same-origin, omit
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8",
+                },
+                redirect: "follow", // manual, *follow, error
+                referrer: "no-referrer", // no-referrer, *client
+                body: JSON.stringify(review), // body data type must match "Content-Type" header
+            })
+        } catch(error) {
+            console.log('Failed to submit review:', JSON.stringify(review), error.message);
+            const cacheKey = `${keys.STAGED_REVIEWS}_${review.restaurant_id}`;
+
+            review.createdAt = Date.now();
+            review.updatedAt = Date.now();
+
+            // Stage the Review
+            return idbHelper.get(cacheKey, stores.STAGED_REVIEWS).then((stagedReviews) => {
+                stagedReviews = [ ...(Array.isArray(stagedReviews) ? stagedReviews : []), review, ];
+
+                idbHelper.set(`${keys.STAGED_REVIEWS}_${review.restaurant_id}`, stagedReviews, stores.STAGED_REVIEWS);
+            })
         }
     }
 
@@ -216,27 +261,4 @@ export default class DBHelper {
           );
           return marker;
         } */
-
-    static async submitReview(data) {
-        try {
-            await fetch(`${DBHelper.DATABASE_URL}/reviews`, {
-                method: "POST", // *GET, POST, PUT, DELETE, etc.
-                mode: "cors", // no-cors, cors, *same-origin
-                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-                credentials: "same-origin", // include, *same-origin, omit
-                headers: {
-                    "Content-Type": "application/json; charset=utf-8",
-                },
-                redirect: "follow", // manual, *follow, error
-                referrer: "no-referrer", // no-referrer, *client
-                body: JSON.stringify(data), // body data type must match "Content-Type" header
-            })
-        } catch(error) {
-            console.log('Failed to submit review:', JSON.stringify(data), error.message);
-
-            // Stage the Review
-            const hash = generateAlphaNumericString();
-            return idbHelper.set(`${keys.STAGED_REVIEWS}_${hash}`, data, stores.STAGED_REVIEWS);
-        }
-    }
 }
