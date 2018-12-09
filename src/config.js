@@ -26,6 +26,7 @@ export default {
         keys: {
             RESTAURANTS: 'RESTAURANTS',
             RESTAURANTS_REVIEWS: 'RESTAURANTS_REVIEWS',
+            STAGED_REVIEWS: 'STAGED_REVIEWS',
             // LAST_CURRENCY_FROM_ID: 'LAST_CURRENCY_FROM_ID',
             // LAST_CURRENCY_TO_ID: 'LAST_CURRENCY_TO_ID',
         },

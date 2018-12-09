@@ -1,5 +1,5 @@
 import config from '../config';
-import { getBaseUrl, } from './utils';
+import { getBaseUrl, generateAlphaNumericString, } from './utils';
 import IDBHelper from './idb-helper';
 
 const {
@@ -69,8 +69,9 @@ export default class DBHelper {
      * Fetch a restaurant by its ID.
      */
     static async fetchRestaurantReviewsById(id, callback) {
+        const cacheKey = `${keys.RESTAURANTS_REVIEWS}_${id}`;
         try {
-            let reviews = await idbHelper.get(`${keys.RESTAURANTS_REVIEWS}_${id}`);
+            let reviews = await idbHelper.get(cacheKey);
 
             // Cache miss - make request;
             if (!reviews) {
@@ -79,7 +80,7 @@ export default class DBHelper {
                 .then(res => res.json())
 
                 // Cache the response
-                idbHelper.set(keys.RESTAURANTS_REVIEWS, reviews);
+                idbHelper.set(cacheKey, reviews);
             }
 
             callback(null, reviews);
@@ -230,11 +231,12 @@ export default class DBHelper {
                 referrer: "no-referrer", // no-referrer, *client
                 body: JSON.stringify(data), // body data type must match "Content-Type" header
             })
-
-            return true;
         } catch(error) {
             console.log('Failed to submit review:', JSON.stringify(data), error.message);
-            return false;
+
+            // Stage the Review
+            const hash = generateAlphaNumericString();
+            return idbHelper.set(`${keys.STAGED_REVIEWS}_${hash}`, data, stores.STAGED_REVIEWS);
         }
     }
 }

@@ -40,3 +40,15 @@ export const scrollToElement = (element) => {
         });
     }
 };
+
+/*
+ * Generates an alpha numeric string
+ * @link http://bit.ly/1AEPJuH
+ * @param {number} length The length of the string
+ * @returns {string} The generated string
+ */
+export const generateAlphaNumericString = (length = 5) => (
+    Math.round(
+        (Math.pow(36, length + 1) - Math.random() * Math.pow(36, length)
+        )).toString(36).slice(1)
+);

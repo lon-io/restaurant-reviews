@@ -83,7 +83,10 @@ const fetchReviewsFromURL = () => {
                 console.error(error);
                 return;
             }
-            fillReviewsHTML();
+
+            // Reviews logic
+            fillReviewsHeaderHTML();
+            fillReviewsContentHTML();
         });
     }
 }
@@ -125,8 +128,12 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     if (restaurant.operating_hours) {
         fillRestaurantHoursHTML();
     }
+
     // fill reviews
     fetchReviewsFromURL();
+    createReviewFormRatingBar();
+    addFormSubmissionHandler();
+    listenForNetworkChanges();
 }
 
 /**
@@ -152,11 +159,20 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-const fillReviewsHTML = (reviews = self.reviews) => {
+const fillReviewsHeaderHTML = () => {
     const container = document.getElementById('reviews-container');
+
     const title = document.createElement('h2');
     title.innerHTML = 'Reviews';
     container.appendChild(title);
+}
+
+/**
+ * Create all reviews HTML and add them to the webpage.
+ */
+const fillReviewsContentHTML = () => {
+    const reviews = self.reviews;
+    const container = document.getElementById('reviews-container');
 
     if (!reviews) {
         const noReviews = document.createElement('p');
@@ -172,10 +188,6 @@ const fillReviewsHTML = (reviews = self.reviews) => {
         ul.appendChild(createReviewHTML(review));
     });
     container.appendChild(ul);
-
-    // Review logic
-    createReviewFormRatingBar();
-    addFormSubmissionHandler();
 }
 
 /**
@@ -250,19 +262,22 @@ const addFormSubmissionHandler = () => {
                 comments,
             };
             console.log(postData);
-            DBHelper.submitReview(postData).then((success) => {
-                if (success) {
-                    fillReviewsHTML();
-                    scrollToElement(document.getElementById('reviews-container'));
-                }
-                else {
-                    console.log('Submission Failed');
-
-                    // Todo: store in IDB for retry
-                }
+            DBHelper.submitReview(postData).then(() => {
+                fillReviewsContentHTML()
+                scrollToElement(document.getElementById('reviews-container'));
             });
         }
     });
+}
+
+const listenForNetworkChanges = () => {
+    window.addEventListener('online', () => {
+        // Todo: sync staged reviews
+    });
+
+    // window.addEventListener('offline', () => {
+    //     this.showFlashMessage('Meh! You\'ve gone offline!');
+    // });
 }
 
 /**
