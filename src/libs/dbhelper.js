@@ -76,18 +76,16 @@ export default class DBHelper {
             let stagedReviews = [];
 
             // Present cached content
-            if (reviews) {
-                // If we're offline, Get staged reviews
-                if (!navigator.onLine) {
-                    stagedReviews = await idbHelper.get(stagedCacheKey, stores.STAGED_REVIEWS);
-                    console.log('1', stagedReviews);
-                }
+            // If we're offline, Get staged reviews
+            if (!navigator.onLine) {
+                stagedReviews = await idbHelper.get(stagedCacheKey, stores.STAGED_REVIEWS);
+            }
 
-                if (Array.isArray(stagedReviews) && stagedReviews.length > 0) {
-                    reviews = reviews.concat(stagedReviews);
-                }
+            if (Array.isArray(stagedReviews) && stagedReviews.length > 0) {
+                reviews = [ ...(Array.isArray(reviews) ? reviews : []), ...stagedReviews, ];
+            }
 
-                console.log('2', stagedReviews);
+            if (reviews && reviews.length > 0) {
                 callback(null, reviews);
             }
 

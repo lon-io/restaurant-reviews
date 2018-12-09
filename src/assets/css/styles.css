@@ -287,9 +287,8 @@ nav h1 a {
     padding: 30px 40px;
 }
 
-.restaurant-page .content-container #reviews-container,
 .restaurant-page .content-container #reviews-form-container {
-    padding: 30px 40px 80px;
+    padding: 30px 40px 90px;
 }
 
 .restaurant-page .content-container #reviews-container h2 {

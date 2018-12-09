@@ -2,6 +2,7 @@ import config from './config';
 import DBHelper from './libs/dbhelper';
 import {
     getResponsiveImageUrl,
+    listenForNetworkChanges,
 } from './libs/utils';
 import {
     registerServiceWorker,
@@ -221,18 +222,4 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
         self.markers.push(marker);
     });
 
-}
-
-const listenForNetworkChanges = () => {
-    if (navigator.offline) {
-        setElementVisibility('#offline-warning', false);
-    }
-
-    window.addEventListener('online', () => {
-        setElementVisibility('#offline-warning', true);
-    });
-
-    window.addEventListener('offline', () => {
-        setElementVisibility('#offline-warning', false);
-    });
 }

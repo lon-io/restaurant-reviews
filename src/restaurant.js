@@ -5,6 +5,7 @@ import {
     getResponsiveImageUrl,
     scrollToElementBottom,
     setElementVisibility,
+    listenForNetworkChanges,
 } from './libs/utils';
 import {
     ratingSVGFactory,
@@ -138,7 +139,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillReviewFormLoader();
     fillReviewFormRatingBar();
     addFormSubmissionHandler();
-    listenForNetworkChanges();
+    listenForNetworkChanges(() => DBHelper.syncStagedReviews());
 }
 
 const fillReviewFormLoader = () => {
@@ -307,23 +308,6 @@ const addFormSubmissionHandler = () => {
                 clearReviewForm();
             });
         }
-    });
-}
-
-const listenForNetworkChanges = () => {
-    if (navigator.offline) {
-        setElementVisibility('#offline-warning', false);
-    }
-
-    window.addEventListener('online', () => {
-        DBHelper.syncStagedReviews();
-        console.log('Rad!');
-        setElementVisibility('#offline-warning', true);
-    });
-
-    window.addEventListener('offline', () => {
-        console.log('Mad!');
-        setElementVisibility('#offline-warning', false);
     });
 }
 
