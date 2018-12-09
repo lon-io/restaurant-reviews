@@ -526,12 +526,13 @@ nav h1 a {
 #offline-warning {
     background-color: yellow;
     display: block;
-    position: absolute;
-    top: 0;
+    position: fixed;
+    bottom: 0;
     left: 0;
     z-index: 9;
+    padding: 0 16px;
 }
 
 .hide {
-    display: none;
+    display: none !important;
 }

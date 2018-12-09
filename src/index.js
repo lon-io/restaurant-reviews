@@ -224,6 +224,10 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
 }
 
 const listenForNetworkChanges = () => {
+    if (navigator.offline) {
+        setElementVisibility('#offline-warning', false);
+    }
+
     window.addEventListener('online', () => {
         setElementVisibility('#offline-warning', true);
     });

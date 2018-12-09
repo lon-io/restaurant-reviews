@@ -143,7 +143,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
 
 const fillReviewFormLoader = () => {
     const reviewLoaderWrapper = document.getElementById('review-loader-container');
-    reviewLoaderWrapper.innerHTML = loadingSVGFactory();
+    if (reviewLoaderWrapper) reviewLoaderWrapper.innerHTML = loadingSVGFactory();
 }
 
 /**
@@ -192,13 +192,14 @@ const fillReviewsContentHTML = () => {
     }
     const ul = document.getElementById('reviews-list');
 
-    // Clear reviews
-    ul.innerHTML = '';
-    console.log('3', reviews);
-    reviews.forEach(review => {
-        ul.appendChild(createReviewHTML(review));
-    });
-    container.appendChild(ul);
+    if (ul) {
+        // Clear reviews
+        ul.innerHTML = '';
+        reviews.forEach(review => {
+            ul.appendChild(createReviewHTML(review));
+        });
+        container.appendChild(ul);
+    }
 }
 
 /**
@@ -310,12 +311,18 @@ const addFormSubmissionHandler = () => {
 }
 
 const listenForNetworkChanges = () => {
+    if (navigator.offline) {
+        setElementVisibility('#offline-warning', false);
+    }
+
     window.addEventListener('online', () => {
         DBHelper.syncStagedReviews();
+        console.log('Rad!');
         setElementVisibility('#offline-warning', true);
     });
 
     window.addEventListener('offline', () => {
+        console.log('Mad!');
         setElementVisibility('#offline-warning', false);
     });
 }
