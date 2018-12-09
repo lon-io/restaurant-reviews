@@ -3,7 +3,7 @@ import DBHelper from './libs/dbhelper';
 import {
     formatDate,
     getResponsiveImageUrl,
-    scrollToElement,
+    scrollToElementBottom,
 } from './libs/utils';
 import {
     registerServiceWorker,
@@ -214,6 +214,25 @@ const createReviewHTML = (review) => {
     return li;
 }
 
+const clearReviewForm = () => {
+    const reviewFormWrapper = document.getElementById('review-form');
+
+    if (reviewFormWrapper) {
+        const inputs = reviewFormWrapper.querySelectorAll('input');
+        Array.from(inputs).forEach((el) => {
+            if (el) el.value = '';
+        });
+
+        const commentBox = reviewFormWrapper.querySelector('textarea');
+        if (commentBox) commentBox.value = '';
+
+        const reviewRatingWrapper = document.getElementById('review-stars');
+        if (reviewRatingWrapper) {
+            delete reviewRatingWrapper.dataset.stars;
+        }
+    }
+}
+
 const createReviewFormRatingBar = () => {
     const ratingSVGFactory = (rating) => `
         <svg height="25" width="23" class="star rating" data-rating="${rating}">
@@ -221,7 +240,9 @@ const createReviewFormRatingBar = () => {
         </svg>
     `;
 
-    const reviewRatingWrapper = document.getElementById('review-stars')
+    const reviewRatingWrapper = document.getElementById('review-stars');
+    reviewRatingWrapper.innerHTML = '';
+
     const stars = new Array(5).fill('').map((_, i) => ratingSVGFactory(i + 1));
     reviewRatingWrapper.innerHTML = stars.join('\n');
 
@@ -263,8 +284,9 @@ const addFormSubmissionHandler = () => {
             };
             console.log(postData);
             DBHelper.submitReview(postData).then(() => {
-                fetchReviewsFromURL()
-                scrollToElement(document.getElementById('reviews-container'));
+                fetchReviewsFromURL();
+                scrollToElementBottom(document.getElementById('reviews-container'));
+                clearReviewForm();
             });
         }
     });
@@ -273,6 +295,7 @@ const addFormSubmissionHandler = () => {
 const listenForNetworkChanges = () => {
     window.addEventListener('online', () => {
         // Todo: sync staged reviews
+        // DBHelper.syncStagedReviews();
     });
 
     // window.addEventListener('offline', () => {

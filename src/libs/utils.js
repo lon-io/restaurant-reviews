@@ -32,10 +32,10 @@ export const formatDate = (dateObject) => {
  * @param {*} selector [The element's selector. E.g. '#id', '.class']
  * @returns {undefined}
  */
-export const scrollToElement = (element) => {
-    if (element && element.offsetTop) {
+export const scrollToElementBottom = (element) => {
+    if (element && element.offsetBottom) {
         window.scroll({
-            top: element.offsetTop,
+            top: element.offsetBottom,
             behavior: 'smooth',
         });
     }
