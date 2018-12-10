@@ -474,7 +474,7 @@ nav h1 a {
     position: relative;
 }
 
-#restaurants-list .restaurant-favourite {
+.restaurant-favourite {
     background-color: #fff;
     border-radius: 20px;
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .16), 0 2px 10px 0 rgba(0, 0, 0, .12);
@@ -484,24 +484,29 @@ nav h1 a {
     height: 40px;
     position: absolute;
     right: 20px;
-    top: -40px;
+    top: 20px;
+    transition: box-shadow linear 0.3s;
     width: 40px;
 }
 
-#restaurants-list .restaurant-favourite:hover {
+.restaurant-favourite:hover {
     box-shadow: 0 4px 10px 0 rgba(0, 0, 0, .16), 0 4px 20px 0 rgba(0, 0, 0, .12);
     -webkit-box-shadow: 0 4px 10px 0 rgba(0, 0, 0, .16), 0 4px 20px 0 rgba(0, 0, 0, .12);
     -moz-box-shadow: 0 4px 10px 0 rgba(0, 0, 0, .16), 0 4px 20px 0 rgba(0, 0, 0, .12);
 }
 
-#restaurants-list .restaurant-favourite svg {
+.restaurant-favourite svg {
     height: 16px;
     width: 16px;
     margin: 12px;
 }
 
-#restaurants-list .restaurant-favourite.checked {
+.restaurant-favourite.checked {
     background-color: #a62639
+}
+
+#restaurants-list .restaurant-favourite {
+    top: -40px;
 }
 
 #restaurants-list .restaurant-favourite.checked svg path {

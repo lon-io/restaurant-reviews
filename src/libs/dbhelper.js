@@ -26,16 +26,19 @@ export default class DBHelper {
     /**
      * Fetch all restaurants.
      */
-    static async fetchRestaurants(callback, preferCache) {
+    static async fetchRestaurants(callback, networkCB) {
         try {
             let restaurants = await idbHelper.get(keys.RESTAURANTS);
+            let cacheResolved = false;
 
             // Present cached data early
             if (restaurants) {
+                cacheResolved = true;
                 callback(null, restaurants);
             }
 
-            if (!preferCache) {
+            const hitServer = !cacheResolved || typeof networkCB === 'function'
+            if (hitServer) {
                 // Fetch (potentially) updated data
                 restaurants = await fetch(`${DBHelper.DATABASE_URL}/restaurants`)
                 .then(res => res.json())
@@ -43,7 +46,8 @@ export default class DBHelper {
                 // Cache the response
                 idbHelper.set(keys.RESTAURANTS, restaurants);
 
-                callback(null, restaurants);
+                if (!cacheResolved) callback(null, restaurants);
+                else if (typeof networkCB === 'function') networkCB(null, restaurants)
             }
         } catch(error) {
             // Oops!. Got an error from server.
@@ -164,54 +168,75 @@ export default class DBHelper {
     /**
      * Fetch restaurants by a cuisine type with proper error handling.
      */
-    static fetchRestaurantByCuisine(cuisine, callback) {
-        // Fetch all restaurants  with proper error handling
-        DBHelper.fetchRestaurants((error, restaurants) => {
-            if (error) {
-                callback(error, null);
-            } else {
-                // Filter restaurants to have only given cuisine type
-                const results = restaurants.filter(r => r.cuisine_type == cuisine);
-                callback(null, results);
+    static fetchRestaurantByCuisine(cuisine, callback, networkCB) {
+        const handler = (error, restaurants, _callback) => {
+            if (typeof _callback === 'function') {
+                if (error) {
+                    _callback(error, null);
+                } else {
+                    // Filter restaurants to have only given cuisine type
+                    const results = restaurants.filter(r => r.cuisine_type == cuisine);
+                    _callback(null, results);
+                }
             }
-        });
+        };
+
+        // Fetch all restaurants  with proper error handling
+        DBHelper.fetchRestaurants(
+            (error, restaurants) => handler(error, restaurants, callback),
+            (error, restaurants) => handler(error, restaurants, networkCB)
+        );
     }
 
     /**
      * Fetch restaurants by a neighborhood with proper error handling.
      */
-    static fetchRestaurantByNeighborhood(neighborhood, callback) {
-        // Fetch all restaurants
-        DBHelper.fetchRestaurants((error, restaurants) => {
-            if (error) {
-                callback(error, null);
-            } else {
-                // Filter restaurants to have only given neighborhood
-                const results = restaurants.filter(r => r.neighborhood == neighborhood);
-                callback(null, results);
+    static fetchRestaurantByNeighborhood(neighborhood, callback, networkCB) {
+        const handler = (error, restaurants, _callback) => {
+            if (typeof _callback === 'function') {
+                if (error) {
+                    _callback(error, null);
+                } else {
+                    // Filter restaurants to have only given neighborhood
+                    const results = restaurants.filter(r => r.neighborhood == neighborhood);
+                    _callback(null, results);
+                }
             }
-        });
+        };
+
+        // Fetch all restaurants
+        DBHelper.fetchRestaurants(
+            (error, restaurants) => handler(error, restaurants, callback),
+            (error, restaurants) => handler(error, restaurants, networkCB)
+        );
     }
 
     /**
      * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
      */
-    static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
-        // Fetch all restaurants
-        DBHelper.fetchRestaurants((error, restaurants) => {
-            if (error) {
-                callback(error, null);
-            } else {
-                let results = restaurants
-                if (cuisine != 'all') { // filter by cuisine
-                    results = results.filter(r => r.cuisine_type == cuisine);
+    static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback, networkCB) {
+        const handler = (error, restaurants, _callback) => {
+            if (typeof _callback === 'function') {
+                if (error) {
+                    _callback(error, null);
+                } else {
+                    let results = restaurants
+                    if (cuisine != 'all') { // filter by cuisine
+                        results = results.filter(r => r.cuisine_type == cuisine);
+                    }
+                    if (neighborhood != 'all') { // filter by neighborhood
+                        results = results.filter(r => r.neighborhood == neighborhood);
+                    }
+                    _callback(null, results);
                 }
-                if (neighborhood != 'all') { // filter by neighborhood
-                    results = results.filter(r => r.neighborhood == neighborhood);
-                }
-                callback(null, results);
             }
-        });
+        }
+
+        // Fetch all restaurants
+        DBHelper.fetchRestaurants(
+            (error, restaurants) => handler(error, restaurants, callback),
+            (error, restaurants) => handler(error, restaurants, networkCB)
+        );
     }
 
     /**
@@ -229,7 +254,7 @@ export default class DBHelper {
                 const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
                 callback(null, uniqueNeighborhoods);
             }
-        }, true);
+        });
     }
 
     /**
@@ -247,7 +272,7 @@ export default class DBHelper {
                 const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
                 callback(null, uniqueCuisines);
             }
-        }, true);
+        });
     }
 
     static async setRestaurantFavouriteStatus(restaurantID, status, skipCache) {

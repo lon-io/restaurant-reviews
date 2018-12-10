@@ -126,6 +126,12 @@ const updateRestaurants = () => {
             resetRestaurants(restaurants);
             fillRestaurantsHTML();
         }
+    }, (error, restaurants) => {
+        if (error) { // Got an error!
+            console.error(error);
+        } else {
+            fillRestaurantFavourites(restaurants);
+        }
     })
 }
 
@@ -159,12 +165,26 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
     addMarkersToMap();
 }
 
+const fillRestaurantFavourites = (restaurants = self.restaurants) => {
+    const ul = document.getElementById('restaurants-list');
+    restaurants.forEach(restaurant => {
+        if (restaurant.is_favorite) {
+            const favourite = ul.querySelector(`#restaurant_${restaurant.id} .restaurant-favourite`);
+
+            if (favourite) {
+                favourite.classList.add('checked');
+            }
+        }
+    });
+}
+
 /**
  * Create restaurant HTML.
  */
 const createRestaurantHTML = (restaurant) => {
     const li = document.createElement('li');
     li.className = "card";
+    li.id = `restaurant_${restaurant.id}`;
 
     const imageUrl = DBHelper.imageUrlForRestaurant(restaurant);
 
