@@ -1,9 +1,12 @@
 import config from './config';
 import DBHelper from './libs/dbhelper';
 import {
+    debounce,
     getResponsiveImageUrl,
-    listenForNetworkChanges,
 } from './libs/utils';
+import {
+    listenForNetworkChanges,
+} from './libs/network';
 import { loveSVGFactory, } from './libs/icons';
 import {
     registerServiceWorker,
@@ -24,6 +27,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     fetchNeighborhoods();
     fetchCuisines();
     listenForNetworkChanges();
+    addFavouriteListener();
 });
 
 /**
@@ -153,7 +157,6 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
         ul.append(createRestaurantHTML(restaurant));
     });
     addMarkersToMap();
-    addFavouriteListener();
 }
 
 /**
@@ -212,17 +215,26 @@ const createRestaurantHTML = (restaurant) => {
     favourite.dataset.key = restaurant.id;
     contentDiv.append(favourite)
 
+    if (restaurant.is_favourite) favourite.classList.add('checked');
+
     return li
 }
 
 const addFavouriteListener = () => {
-    window.addEventListener('click', (evt) => {
-        const favButton = evt.target && evt.target.closest('.restaurant-favourite');
-        if (favButton) {
+    const debouncedHandler = debounce(self, (favButton) => {
             const restaurantID = favButton.dataset.key;
             favButton.classList.toggle('checked');
 
             console.log(restaurantID);
+
+            const checked = favButton.classList.contains('checked');
+            DBHelper.setRestaurantFavouriteStatus(restaurantID, checked)
+    }, 300);
+
+    window.addEventListener('click', (evt) => {
+        const favButton = evt.target && evt.target.closest('.restaurant-favourite');
+        if (favButton) {
+            debouncedHandler(favButton);
         }
     })
 }

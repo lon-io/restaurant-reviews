@@ -5,8 +5,10 @@ import {
     getResponsiveImageUrl,
     scrollToElementBottom,
     setElementVisibility,
-    listenForNetworkChanges,
 } from './libs/utils';
+import {
+    listenForNetworkChanges,
+} from './libs/network';
 import {
     ratingSVGFactory,
     loadingSVGFactory,
@@ -139,7 +141,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillReviewFormLoader();
     fillReviewFormRatingBar();
     addFormSubmissionHandler();
-    listenForNetworkChanges(() => DBHelper.syncStagedReviews());
+    listenForNetworkChanges();
 }
 
 const fillReviewFormLoader = () => {

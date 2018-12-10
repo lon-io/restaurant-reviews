@@ -55,24 +55,22 @@ export const setElementVisibility = (selector, hide) => {
 }
 
 /**
- * Util to perform actions on network chanegs
- * @param {*} onlineCB [Function to call when online]
- * @param {*} offlineCB [Function to call when offline]
- */
-export const listenForNetworkChanges = (onlineCB, offlineCB) => {
-    if (!navigator.onLine) {
-        setElementVisibility('#offline-warning', false);
-    }
+* [debounce: forces a function to execute only once after a set time]
+* @param {*} ctx
+* @param {*} func
+* @param {*} delay(ms)
+* @return {function} [The debounced function]
+*/
+export const debounce = (ctx, func, delay) => {
+   let timeout;
 
-    window.addEventListener('online', () => {
-        setElementVisibility('#offline-warning', true);
+   return (...args) => {
+       if (timeout) {
+           clearTimeout(timeout);
+       }
 
-        if (typeof onlineCB === 'function') onlineCB();
-    });
-
-    window.addEventListener('offline', () => {
-        setElementVisibility('#offline-warning', false);
-
-        if (typeof offlineCB === 'function') offlineCB();
-    });
-}
+       timeout = setTimeout(() => {
+           func.apply(ctx, args);
+       }, delay);
+   };
+};

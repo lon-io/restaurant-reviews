@@ -1,5 +1,5 @@
 import config from '../config';
-import { getBaseUrl, generateAlphaNumericString, } from './utils';
+import { getBaseUrl, } from './utils';
 import IDBHelper from './idb-helper';
 
 const {
@@ -26,20 +26,25 @@ export default class DBHelper {
     /**
      * Fetch all restaurants.
      */
-    static async fetchRestaurants(callback) {
+    static async fetchRestaurants(callback, preferCache) {
         try {
             let restaurants = await idbHelper.get(keys.RESTAURANTS);
 
-            // Cache miss - make request;
-            if (!restaurants) {
+            // Present cached data early
+            if (restaurants) {
+                callback(null, restaurants);
+            }
+
+            if (!preferCache) {
+                // Fetch (potentially) updated data
                 restaurants = await fetch(`${DBHelper.DATABASE_URL}/restaurants`)
                 .then(res => res.json())
 
                 // Cache the response
                 idbHelper.set(keys.RESTAURANTS, restaurants);
-            }
 
-            callback(null, restaurants);
+                callback(null, restaurants);
+            }
         } catch(error) {
             // Oops!. Got an error from server.
             callback(error, null);
@@ -130,7 +135,7 @@ export default class DBHelper {
                 return idbHelper.get(cacheKey, stores.STAGED_REVIEWS).then((stagedReviews) => {
                     stagedReviews = [ ...(Array.isArray(stagedReviews) ? stagedReviews : []), review, ];
 
-                    idbHelper.set(`${keys.STAGED_REVIEWS}_${review.restaurant_id}`, stagedReviews, stores.STAGED_REVIEWS);
+                    idbHelper.set(cacheKey, stagedReviews, stores.STAGED_REVIEWS);
                 })
             }
         }
@@ -145,7 +150,7 @@ export default class DBHelper {
                     idbHelper.get(key, stores.STAGED_REVIEWS).then(reviews => {
                         // Sync each review
                         return Array.isArray(reviews) && reviews.length > 0
-                            ? Promise.all(reviews.filter(r => !!r).map(review => this.submitReview(review)))
+                            ? Promise.all(reviews.filter(r => !!r).map(review => this.submitReview(review, true)))
                             : Promise.resolve(false);
                     }).then(done => {
                         // Clear the key when sync is done
@@ -224,7 +229,7 @@ export default class DBHelper {
                 const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
                 callback(null, uniqueNeighborhoods);
             }
-        });
+        }, true);
     }
 
     /**
@@ -242,7 +247,60 @@ export default class DBHelper {
                 const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
                 callback(null, uniqueCuisines);
             }
-        });
+        }, true);
+    }
+
+    static async setRestaurantFavouriteStatus(restaurantID, status, skipCache) {
+        try {
+            await fetch(
+                `${DBHelper.DATABASE_URL}/restaurants/${restaurantID}?is_favorite=${Boolean(status)}`, {
+                    method: "PUT", // *GET, POST, PUT, DELETE, etc.
+                    mode: "cors", // no-cors, cors, *same-origin
+                    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                    credentials: "same-origin", // include, *same-origin, omit
+                    headers: {
+                        "Content-Type": "application/json; charset=utf-8",
+                    },
+                    redirect: "follow", // manual, *follow, error
+                    referrer: "no-referrer", // no-referrer, *client
+                })
+        } catch(error) {
+            console.log('Failed to set favourite status for:', restaurantID, status, error.message);
+
+            if (!skipCache) {
+                const cacheKey = keys.STAGED_FAVOURITE_ACTIONS;
+
+                // Stage the Review
+                return idbHelper.get(cacheKey).then((stagedFavActions) => {
+                    stagedFavActions = [...(Array.isArray(stagedFavActions) ? stagedFavActions : []), {
+                        id: restaurantID,
+                        status: Boolean(status),
+                    }, ];
+
+                    idbHelper.set(cacheKey, stagedFavActions);
+                })
+            }
+        }
+    }
+
+    static syncStagedFavouriteActions() {
+        const cacheKey = keys.STAGED_FAVOURITE_ACTIONS;
+
+        // Get cached actions
+        idbHelper.get(cacheKey).then(stagedFavActions => {
+            if (Array.isArray(stagedFavActions) && stagedFavActions.length > 0) {
+                const resultPromise = Promise.all(
+                    stagedFavActions
+                    .filter(a => !!a)
+                    .map(action => this.setRestaurantFavouriteStatus(action.id, action.status, true))
+                )
+
+                resultPromise.then(done => {
+                    // Clear the key when sync is done
+                    if (done) idbHelper.delete(key);
+                });
+            }
+        })
     }
 
     /**
@@ -272,14 +330,4 @@ export default class DBHelper {
             marker.addTo(newMap);
             return marker;
         }
-        /* static mapMarkerForRestaurant(restaurant, map) {
-          const marker = new google.maps.Marker({
-            position: restaurant.latlng,
-            title: restaurant.name,
-            url: DBHelper.urlForRestaurant(restaurant),
-            map: map,
-            animation: google.maps.Animation.DROP}
-          );
-          return marker;
-        } */
 }
