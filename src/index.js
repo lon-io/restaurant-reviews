@@ -4,6 +4,7 @@ import {
     getResponsiveImageUrl,
     listenForNetworkChanges,
 } from './libs/utils';
+import { loveSVGFactory, } from './libs/icons';
 import {
     registerServiceWorker,
 } from './libs/swhelper';
@@ -152,6 +153,7 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
         ul.append(createRestaurantHTML(restaurant));
     });
     addMarkersToMap();
+    addFavouriteListener();
 }
 
 /**
@@ -204,7 +206,25 @@ const createRestaurantHTML = (restaurant) => {
     more.href = DBHelper.urlForRestaurant(restaurant);
     contentDiv.append(more)
 
+    const favourite = document.createElement('div');
+    favourite.innerHTML = loveSVGFactory();
+    favourite.className = 'restaurant-favourite';
+    favourite.dataset.key = restaurant.id;
+    contentDiv.append(favourite)
+
     return li
+}
+
+const addFavouriteListener = () => {
+    window.addEventListener('click', (evt) => {
+        const favButton = evt.target && evt.target.closest('.restaurant-favourite');
+        if (favButton) {
+            const restaurantID = favButton.dataset.key;
+            favButton.classList.toggle('checked');
+
+            console.log(restaurantID);
+        }
+    })
 }
 
 /**
