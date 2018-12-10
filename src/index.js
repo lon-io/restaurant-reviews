@@ -215,7 +215,7 @@ const createRestaurantHTML = (restaurant) => {
     favourite.dataset.key = restaurant.id;
     contentDiv.append(favourite)
 
-    if (restaurant.is_favourite) favourite.classList.add('checked');
+    if (restaurant.is_favorite) favourite.classList.add('checked');
 
     return li
 }
