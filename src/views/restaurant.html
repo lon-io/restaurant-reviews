@@ -18,17 +18,19 @@
     <!-- Beginning header -->
     <header>
         <!-- Beginning nav -->
-        <nav>
+        <nav class="header-nav">
             <h1>
                 <a href="/">Restaurant Reviews</a>
             </h1>
         </nav>
         <!-- Beginning breadcrumb -->
-        <ul id="breadcrumb">
-            <li>
-                <a href="./">Home</a>
-            </li>
-        </ul>
+        <nav aria-label="Breadcrumb">
+            <ol id="breadcrumb">
+                <li>
+                    <a href="./">Home</a>
+                </li>
+            </ol>
+        </nav>
         <!-- End breadcrumb -->
         <!-- End nav -->
     </header>
@@ -39,13 +41,13 @@
         <div id="offline-warning" class="hide">You're currently offline...</div>
         <!-- Beginning map -->
         <section id="map-container" class="map-container">
-            <div id="map"></div>
+            <div id="map" role="application"></div>
         </section>
         <!-- End map -->
         <!-- Beginning restaurant -->
         <div class="content-container">
             <section id="restaurant-container" class="restaurant-container">
-                <h1 id="restaurant-name"></h1>
+                <h2 id="restaurant-name"></h2>
                 <picture id="restaurant-picture"></picture>
                 <p id="restaurant-cuisine"></p>
                 <p id="restaurant-address"></p>
@@ -58,19 +60,19 @@
             </section>
             <section class="reviews-form-container" id="reviews-form-container">
                 <h2>Write a Review</h2>
-                <form id="review-form">
+                <form id="review-form" role="form">
                     <label for="name">Name</label>
-                    <input id="name" name="name" required/>
+                    <input id="name" name="name" required aria-required="true"/>
 
                     <label for="ratingBar">Rating</label>
-                    <input id="ratingBar" name="rating" required type="hidden" />
+                    <input id="ratingBar" name="rating" required aria-required="true" type="hidden" />
                     <div id="review-stars" class="stars"></div>
 
                     <label for="review">Review</label>
-                    <textarea id="review" name="review" required></textarea>
+                    <textarea id="review" name="review" required aria-required="true"></textarea>
                     <div id="review-loader-container" class="hide"></div>
                     <button>Submit</button>
-                </formid>
+                </form>
             </section>
         </div>
         <!-- End reviews -->

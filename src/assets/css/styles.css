@@ -91,19 +91,19 @@ header {
 
 /* ====================== Navigation ====================== */
 
-nav {
+nav.header-nav {
     width: 100%;
     height: 80px;
     background-color: #252831;
     text-align: center;
 }
 
-nav h1 {
+nav.header-nav h1 {
     margin: auto;
     line-height: 80px;
 }
 
-nav h1 a {
+nav.header-nav h1 a {
     color: #fff;
     font-size: 13pt;
     font-weight: 200;
@@ -112,7 +112,7 @@ nav h1 a {
 }
 
 @media screen and (min-width: 600px) {
-    nav {
+    nav.header-nav  {
         font-size: 14pt;
         letter-spacing: 10px;
     }

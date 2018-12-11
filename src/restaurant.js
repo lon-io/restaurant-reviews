@@ -145,7 +145,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     const image = document.createElement('img');
     image.className = 'restaurant-img';
     image.src = getResponsiveImageUrl(imageUrl, 'sm');
-    image.alt = restaurant.name;
+    image.alt =  `An image of ${restaurant.name}`;
     picture.append(image);
 
     const cuisine = document.getElementById('restaurant-cuisine');

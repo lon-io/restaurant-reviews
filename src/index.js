@@ -217,7 +217,7 @@ const createRestaurantHTML = (restaurant) => {
     const image = document.createElement('img');
     image.className = 'restaurant-img';
     image.src = getResponsiveImageUrl(imageUrl, 'sm');
-    image.alt = restaurant.name;
+    image.alt =  `An image of ${restaurant.name}`;
     picture.append(image);
 
     li.append(picture);
@@ -226,7 +226,7 @@ const createRestaurantHTML = (restaurant) => {
     contentDiv.className = 'restaurant-content';
     li.append(contentDiv);
 
-    const name = document.createElement('h1');
+    const name = document.createElement('h2');
     name.innerHTML = restaurant.name;
     contentDiv.append(name);
 
