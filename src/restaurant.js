@@ -3,6 +3,7 @@ import DBHelper from './libs/dbhelper';
 import {
     formatDate,
     getResponsiveImageUrl,
+    isOnline,
     scrollToElementBottom,
     setElementVisibility,
 } from './libs/utils';
@@ -82,6 +83,12 @@ const fetchRestaurantFromURL = (callback) => {
                 console.log('nada 12!!');
                 fillRestaurantHTML();
                 callback(null, restaurant)
+
+                if (!isOnline()) {
+                    DBHelper.fetchStagedFavouriteActions((stagedActions) => {
+                        fillRestaurantFavourite(restaurant, stagedActions);
+                    })
+                }
             }, (error, restaurant) => {
                 if (!restaurant) {
                     console.error(error);
@@ -89,8 +96,6 @@ const fetchRestaurantFromURL = (callback) => {
                 }
 
                 self.restaurant = restaurant;
-                console.log('rad!!');
-                console.log('rad!!');
                 fillRestaurantFavourite();
             });
     }
@@ -174,11 +179,18 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     listenForFavouriteAction();
 }
 
-const fillRestaurantFavourite = (restaurant = self.restaurant) => {
+const fillRestaurantFavourite = (restaurant = self.restaurant, stagedActions) => {
     const favourite = document.querySelector('.restaurant-favourite');
 
     if (favourite) {
-        favourite.classList.toggle('checked', restaurant.is_favorite === 'true');
+        let addClass = Boolean(restaurant.is_favorite === 'true');
+        const stagedAction = Array.isArray(stagedActions) && stagedActions.find(
+            (ac) => ac.id === `${restaurant.id}`
+        );
+
+        if (stagedAction) addClass = stagedAction && stagedAction.status;
+
+        favourite.classList.toggle('checked', addClass);
     }
 }
 

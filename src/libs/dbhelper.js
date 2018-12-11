@@ -102,7 +102,7 @@ export default class DBHelper {
 
             // Present cached content
             // If we're offline, Get staged reviews
-            if (!isOnline) {
+            if (!isOnline()) {
                 stagedReviews = await idbHelper.get(stagedCacheKey, stores.STAGED_REVIEWS);
             }
 
@@ -313,7 +313,8 @@ export default class DBHelper {
 
                 // Stage the Review
                 return idbHelper.get(cacheKey).then((stagedFavActions) => {
-                    stagedFavActions = [...(Array.isArray(stagedFavActions) ? stagedFavActions : []), {
+                    stagedFavActions = [...(Array.isArray(stagedFavActions) ?
+                        stagedFavActions.filter(ac => `${ac.id}` !== restaurantID) : []), {
                         id: restaurantID,
                         status: Boolean(status),
                     }, ];
@@ -338,7 +339,7 @@ export default class DBHelper {
 
                 resultPromise.then(done => {
                     // Clear the key when sync is done
-                    if (done) idbHelper.delete(key);
+                    if (done) idbHelper.delete(cacheKey);
                 });
             }
         })

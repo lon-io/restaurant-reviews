@@ -127,6 +127,13 @@ const updateRestaurants = () => {
             } else {
                 resetRestaurants(restaurants);
                 fillRestaurantsHTML();
+
+                if (!isOnline()) {
+                    DBHelper.fetchStagedFavouriteActions((stagedActions) => {
+                        console.log('Lon', stagedActions);
+                        fillRestaurantFavourites(restaurants, stagedActions);
+                    })
+                }
             }
         }, (error, restaurants) => {
             if (error) { // Got an error!
@@ -135,12 +142,6 @@ const updateRestaurants = () => {
                 fillRestaurantFavourites(restaurants);
             }
         })
-
-    if (!isOnline) {
-        DBHelper.fetchStagedFavouriteActions((stagedActions) => {
-            fillRestaurantFavourites(restaurants, stagedActions);
-        })
-    }
 }
 
 window.updateRestaurants = updateRestaurants;
@@ -181,7 +182,7 @@ const fillRestaurantFavourites = (restaurants = self.restaurants, stagedActions)
         if (favourite) {
             let addClass = Boolean(restaurant.is_favorite === 'true');
             const stagedAction = Array.isArray(stagedActions) && stagedActions.find(
-                (ac) => ac.id === restaurant.id
+                (ac) => ac.id === `${restaurant.id}`
             );
 
             if (stagedAction) addClass = stagedAction && stagedAction.status;

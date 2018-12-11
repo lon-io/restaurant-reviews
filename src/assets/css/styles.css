@@ -515,6 +515,7 @@ nav h1 a {
 }
 
 .restaurant-favourite.checked svg path {
+    transition: fill linear 0.3s;
     fill: #fff
 }
 
