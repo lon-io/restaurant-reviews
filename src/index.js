@@ -1,12 +1,13 @@
 import config from './config';
 import DBHelper from './libs/dbhelper';
 import {
-    debounce,
+    isOnline,
     getResponsiveImageUrl,
 } from './libs/utils';
 import {
     listenForNetworkChanges,
-} from './libs/network';
+    listenForFavouriteAction,
+} from './libs/listeners';
 import { loveSVGFactory, } from './libs/icons';
 import {
     registerServiceWorker,
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     fetchNeighborhoods();
     fetchCuisines();
     listenForNetworkChanges();
-    addFavouriteListener();
+    listenForFavouriteAction();
 });
 
 /**
@@ -119,20 +120,27 @@ const updateRestaurants = () => {
     const cuisine = cSelect[cIndex].value;
     const neighborhood = nSelect[nIndex].value;
 
-    DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
-        if (error) { // Got an error!
-            console.error(error);
-        } else {
-            resetRestaurants(restaurants);
-            fillRestaurantsHTML();
-        }
-    }, (error, restaurants) => {
-        if (error) { // Got an error!
-            console.error(error);
-        } else {
-            fillRestaurantFavourites(restaurants);
-        }
-    })
+    DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood,
+        (error, restaurants) => {
+            if (error) { // Got an error!
+                console.error(error);
+            } else {
+                resetRestaurants(restaurants);
+                fillRestaurantsHTML();
+            }
+        }, (error, restaurants) => {
+            if (error) { // Got an error!
+                console.error(error);
+            } else {
+                fillRestaurantFavourites(restaurants);
+            }
+        })
+
+    if (!isOnline) {
+        DBHelper.fetchStagedFavouriteActions((stagedActions) => {
+            fillRestaurantFavourites(restaurants, stagedActions);
+        })
+    }
 }
 
 window.updateRestaurants = updateRestaurants;
@@ -165,15 +173,20 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
     addMarkersToMap();
 }
 
-const fillRestaurantFavourites = (restaurants = self.restaurants) => {
+const fillRestaurantFavourites = (restaurants = self.restaurants, stagedActions) => {
     const ul = document.getElementById('restaurants-list');
     restaurants.forEach(restaurant => {
-        if (restaurant.is_favorite) {
-            const favourite = ul.querySelector(`#restaurant_${restaurant.id} .restaurant-favourite`);
+        const favourite = ul.querySelector(`#restaurant_${restaurant.id} .restaurant-favourite`);
 
-            if (favourite) {
-                favourite.classList.add('checked');
-            }
+        if (favourite) {
+            let addClass = Boolean(restaurant.is_favorite === 'true');
+            const stagedAction = Array.isArray(stagedActions) && stagedActions.find(
+                (ac) => ac.id === restaurant.id
+            );
+
+            if (stagedAction) addClass = stagedAction && stagedAction.status;
+
+            favourite.classList.toggle('checked', addClass);
         }
     });
 }
@@ -235,28 +248,9 @@ const createRestaurantHTML = (restaurant) => {
     favourite.dataset.key = restaurant.id;
     contentDiv.append(favourite)
 
-    if (restaurant.is_favorite) favourite.classList.add('checked');
+    if (restaurant.is_favorite === 'true') favourite.classList.add('checked');
 
     return li
-}
-
-const addFavouriteListener = () => {
-    const debouncedHandler = debounce(self, (favButton) => {
-            const restaurantID = favButton.dataset.key;
-            favButton.classList.toggle('checked');
-
-            console.log(restaurantID);
-
-            const checked = favButton.classList.contains('checked');
-            DBHelper.setRestaurantFavouriteStatus(restaurantID, checked)
-    }, 300);
-
-    window.addEventListener('click', (evt) => {
-        const favButton = evt.target && evt.target.closest('.restaurant-favourite');
-        if (favButton) {
-            debouncedHandler(favButton);
-        }
-    })
 }
 
 /**

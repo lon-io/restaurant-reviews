@@ -1,5 +1,5 @@
 import config from '../config';
-import { getBaseUrl, } from './utils';
+import { getBaseUrl, isOnline, } from './utils';
 import IDBHelper from './idb-helper';
 
 const {
@@ -37,8 +37,10 @@ export default class DBHelper {
                 callback(null, restaurants);
             }
 
+            console.log('nada 5!!');
             const hitServer = !cacheResolved || typeof networkCB === 'function'
             if (hitServer) {
+                console.log('nada 6!!');
                 // Fetch (potentially) updated data
                 restaurants = await fetch(`${DBHelper.DATABASE_URL}/restaurants`)
                 .then(res => res.json())
@@ -46,6 +48,7 @@ export default class DBHelper {
                 // Cache the response
                 idbHelper.set(keys.RESTAURANTS, restaurants);
 
+                console.log('nada!! 7');
                 if (!cacheResolved) callback(null, restaurants);
                 else if (typeof networkCB === 'function') networkCB(null, restaurants)
             }
@@ -58,20 +61,33 @@ export default class DBHelper {
     /**
      * Fetch a restaurant by its ID.
      */
-    static fetchRestaurantById(id, callback) {
-        // fetch all restaurants with proper error handling.
-        DBHelper.fetchRestaurants((error, restaurants) => {
-            if (error) {
-                callback(error, null);
-            } else {
-                const restaurant = restaurants.find(r => r.id == id);
-                if (restaurant) { // Got the restaurant
-                    callback(null, restaurant);
-                } else { // Restaurant does not exist in the database
-                    callback('Restaurant does not exist', null);
+    static fetchRestaurantById(id, callback, networkCB) {
+        console.log('nada2 !!');
+        const handler = (error, restaurants, _callback) => {
+            console.log('nada 3!!');
+            if (typeof _callback === 'function') {
+                console.log('nada 4!!');
+                if (error) {
+                    console.log('nada 9!!');
+                    _callback(error, null);
+                } else {
+                    const restaurant = restaurants.find(r => r.id == id);
+                    if (restaurant) { // Got the restaurant
+                        console.log('nada 10!!');
+                        _callback(null, restaurant);
+                    } else { // Restaurant does not exist in the database
+                        console.log('nada 11!!');
+                        _callback('Restaurant does not exist', null);
+                    }
                 }
             }
-        });
+        };
+
+        // Fetch all restaurants  with proper error handling
+        DBHelper.fetchRestaurants(
+            (error, restaurants) => handler(error, restaurants, callback),
+            (error, restaurants) => handler(error, restaurants, networkCB)
+        );
     }
 
     /**
@@ -86,7 +102,7 @@ export default class DBHelper {
 
             // Present cached content
             // If we're offline, Get staged reviews
-            if (!navigator.onLine) {
+            if (!isOnline) {
                 stagedReviews = await idbHelper.get(stagedCacheKey, stores.STAGED_REVIEWS);
             }
 
@@ -324,6 +340,17 @@ export default class DBHelper {
                     // Clear the key when sync is done
                     if (done) idbHelper.delete(key);
                 });
+            }
+        })
+    }
+
+    static fetchStagedFavouriteActions (callback) {
+        const cacheKey = keys.STAGED_FAVOURITE_ACTIONS;
+
+        // Get cached actions
+        return idbHelper.get(cacheKey).then(stagedFavActions => {
+            if (Array.isArray(stagedFavActions) && stagedFavActions.length > 0) {
+                callback(stagedFavActions);
             }
         })
     }

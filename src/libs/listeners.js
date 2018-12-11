@@ -1,4 +1,8 @@
 import DBHelper from './dbhelper';
+import {
+    debounce,
+    setElementVisibility,
+} from './utils';
 
 /**
  * Util to perform actions on network chanegs
@@ -23,4 +27,23 @@ export const listenForNetworkChanges = (onlineCB, offlineCB) => {
 
         if (typeof offlineCB === 'function') offlineCB();
     });
+}
+
+export const listenForFavouriteAction = () => {
+    const debouncedHandler = debounce(self, (favButton) => {
+            const restaurantID = favButton.dataset.key;
+            favButton.classList.toggle('checked');
+
+            console.log(restaurantID);
+
+            const checked = favButton.classList.contains('checked');
+            DBHelper.setRestaurantFavouriteStatus(restaurantID, checked)
+    }, 300);
+
+    window.addEventListener('click', (evt) => {
+        const favButton = evt.target && evt.target.closest('.restaurant-favourite');
+        if (favButton) {
+            debouncedHandler(favButton);
+        }
+    })
 }

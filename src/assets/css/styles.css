@@ -287,6 +287,15 @@ nav h1 a {
     padding: 30px 40px;
 }
 
+.restaurant-page .content-container #restaurant-container {
+    position: relative;
+}
+
+.restaurant-container .restaurant-favourite {
+    right: 30px;
+    top: 30px;
+}
+
 .restaurant-page .content-container #reviews-form-container {
     padding: 30px 40px 90px;
 }
@@ -485,7 +494,7 @@ nav h1 a {
     position: absolute;
     right: 20px;
     top: 20px;
-    transition: box-shadow linear 0.3s;
+    transition: box-shadow linear 0.3s, background-color linear 0.3s;
     width: 40px;
 }
 
@@ -505,13 +514,14 @@ nav h1 a {
     background-color: #a62639
 }
 
+.restaurant-favourite.checked svg path {
+    fill: #fff
+}
+
 #restaurants-list .restaurant-favourite {
     top: -40px;
 }
 
-#restaurants-list .restaurant-favourite.checked svg path {
-    fill: #fff
-}
 
 #restaurants-list .restaurant-img {
     background-color: #ccc;

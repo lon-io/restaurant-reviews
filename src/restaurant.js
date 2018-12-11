@@ -8,10 +8,12 @@ import {
 } from './libs/utils';
 import {
     listenForNetworkChanges,
-} from './libs/network';
+    listenForFavouriteAction,
+} from './libs/listeners';
 import {
     ratingSVGFactory,
     loadingSVGFactory,
+    loveSVGFactory,
 } from './libs/icons';
 import {
     registerServiceWorker,
@@ -68,15 +70,29 @@ const fetchRestaurantFromURL = (callback) => {
         error = 'No restaurant id in URL'
         callback(error, null);
     } else {
-        DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-            self.restaurant = restaurant;
-            if (!restaurant) {
-                console.error(error);
-                return;
-            }
-            fillRestaurantHTML();
-            callback(null, restaurant)
-        });
+        console.log('nada!!');
+        DBHelper.fetchRestaurantById(id,
+            (error, restaurant) => {
+                self.restaurant = restaurant;
+                if (!restaurant) {
+                    console.error(error);
+                    return;
+                }
+
+                console.log('nada 12!!');
+                fillRestaurantHTML();
+                callback(null, restaurant)
+            }, (error, restaurant) => {
+                if (!restaurant) {
+                    console.error(error);
+                    return;
+                }
+
+                self.restaurant = restaurant;
+                console.log('rad!!');
+                console.log('rad!!');
+                fillRestaurantFavourite();
+            });
     }
 }
 
@@ -130,6 +146,19 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     const cuisine = document.getElementById('restaurant-cuisine');
     cuisine.innerHTML = restaurant.cuisine_type;
 
+    const container = document.getElementById('restaurant-container');
+
+    if (container) {
+        const favourite = document.createElement('div');
+        favourite.innerHTML = loveSVGFactory();
+        favourite.className = 'restaurant-favourite';
+        favourite.dataset.key = restaurant.id;
+        container.append(favourite);
+
+        if (restaurant.is_favorite === 'true') favourite.classList.add('checked');
+    }
+
+
     // fill operating hours
     if (restaurant.operating_hours) {
         fillRestaurantHoursHTML();
@@ -142,6 +171,15 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillReviewFormRatingBar();
     addFormSubmissionHandler();
     listenForNetworkChanges();
+    listenForFavouriteAction();
+}
+
+const fillRestaurantFavourite = (restaurant = self.restaurant) => {
+    const favourite = document.querySelector('.restaurant-favourite');
+
+    if (favourite) {
+        favourite.classList.toggle('checked', restaurant.is_favorite === 'true');
+    }
 }
 
 const fillReviewFormLoader = () => {

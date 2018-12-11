@@ -74,3 +74,5 @@ export const debounce = (ctx, func, delay) => {
        }, delay);
    };
 };
+
+export const isOnline = () => navigator.onLine
